@@ -17,11 +17,11 @@ app.use(
   express.json({
     // We need the raw body to verify webhook signatures.
     // Let's compute it only when hitting the Stripe webhook endpoint.
-    verify: function(req, res, buf) {
+    verify: function (req, res, buf) {
       if (req.originalUrl.startsWith("/webhook")) {
         req.rawBody = buf.toString();
       }
-    }
+    },
   })
 );
 
@@ -30,15 +30,19 @@ app.get("/", (req, res) => {
   res.sendFile(path);
 });
 
+app.get("/stripe-key", (_, res) => {
+  console.log("env.STRIPE_PUBLISHABLE_KEY", process.env.STRIPE_PUBLISHABLE_KEY);
+  res.send({ publishableKey: process.env.STRIPE_PUBLISHABLE_KEY });
+});
+
 app.post("/create-setup-intent", async (req, res) => {
   const setupIntent = await stripe.setupIntents.create();
 
   // Send publishable key and SetupIntent details to client
   res.send({
     publishableKey: process.env.STRIPE_PUBLISHABLE_KEY,
-    clientSecret: setupIntent.client_secret
+    clientSecret: setupIntent.client_secret,
   });
-
 });
 
 // Webhook handler for asynchronous events.
@@ -89,7 +93,7 @@ app.post("/webhook", async (req, res) => {
     // Create a Customer to store the PaymentMethod ID for later use
     const customer = await stripe.customers.create({
       payment_method: data.object.payment_method,
-      email: paymentMethod.billing_details.email
+      email: paymentMethod.billing_details.email,
     });
 
     // At this point, associate the ID of the Customer object with your
