@@ -31,7 +31,6 @@ app.get("/", (req, res) => {
 });
 
 app.get("/stripe-key", (_, res) => {
-  console.log("env.STRIPE_PUBLISHABLE_KEY", process.env.STRIPE_PUBLISHABLE_KEY);
   res.send({ publishableKey: process.env.STRIPE_PUBLISHABLE_KEY });
 });
 
